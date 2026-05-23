@@ -57,7 +57,20 @@ if (!videoUrl) {
     return interaction.followUp('Song link problem. Try another song.');
 }
 
-const stream = await play.stream(videoUrl);
+let stream;
+
+try {
+    stream = await play.stream(videoUrl, {
+        quality: 2
+    });
+} catch (error) {
+    console.error(error);
+
+    return interaction.editReply(
+        '❌ YouTube blocked playback on Railway. Bot is online though.'
+    );
+}
+
 const resource = createAudioResource(stream.stream);
 
     const player = createAudioPlayer();
