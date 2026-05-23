@@ -57,29 +57,15 @@ if (!videoUrl) {
     return interaction.followUp('Song link problem. Try another song.');
 }
 
-const stream = youtubedl.exec(
-    videoUrl,
+const stream = await play.stream(videoUrl);
+
+const resource = createAudioResource(
+    stream.stream,
     {
-        output: '-',
-        format: 'bestaudio[ext=webm]/bestaudio',
-        noWarnings: true,
-        noCheckCertificates: true,
-        preferFreeFormats: true
-    },
-    {
-        stdio: ['ignore', 'pipe', 'pipe']
+        inputType: stream.type,
+        inlineVolume: true
     }
 );
-
-stream.stderr.on('data', data => {
-    console.log('YT-DLP ERROR:', data.toString());
-});
-
-const resource = createAudioResource(stream.stdout, {
-    inlineVolume: true
-});
-
-const resource = createAudioResource(stream.stdout);
 
     const player = createAudioPlayer();
 interaction.client.player = player;
