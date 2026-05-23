@@ -44,7 +44,7 @@ module.exports = {
       });
 
       if (!results.length) {
-        return interaction.editReply('No song found.');
+        return interaction.followUp('No song found.');
       }
 
       videoUrl = results[0].url;
@@ -54,7 +54,7 @@ module.exports = {
 console.log('VIDEO URL:', videoUrl);
 
 if (!videoUrl) {
-    return interaction.editReply('Song link problem. Try another song.');
+    return interaction.followUp('Song link problem. Try another song.');
 }
 
 const stream = youtubedl.exec(
