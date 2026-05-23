@@ -1,97 +1,54 @@
 const { SlashCommandBuilder } = require('discord.js');
-const {
-  joinVoiceChannel,
-  createAudioPlayer,
-  createAudioResource,
-  AudioPlayerStatus
-} = require('@discordjs/voice');
 
-const play = require('play-dl');
-const youtubedl = require('youtube-dl-exec');
 module.exports = {
-  name: 'play',
-  description: 'Play music',
+    name: 'play',
+    description: 'Play music',
 
-  data: new SlashCommandBuilder()
-    .setName('play')
-    .setDescription('Play music')
-    .addStringOption(option =>
-      option
-        .setName('song')
-        .setDescription('Song name or YouTube link')
-        .setRequired(true)
-    ),
+    data: new SlashCommandBuilder()
+        .setName('play')
+        .setDescription('Play music')
+        .addStringOption(option =>
+            option
+                .setName('song')
+                .setDescription('Song name or link')
+                .setRequired(true)
+        ),
 
-  async execute(interaction) {
-    await interaction.reply('🔎 Searching...');
+    async execute(interaction) {
+        await interaction.reply('🔎 Searching...');
 
-    const voiceChannel = interaction.member.voice.channel;
+        const voiceChannel = interaction.member.voice.channel;
 
-    if (!voiceChannel) {
-      return interaction.editReply('Join a voice channel first.');
+        if (!voiceChannel) {
+            return interaction.editReply('Join a voice channel first.');
+        }
+
+        const query = interaction.options.getString('song');
+
+        const player = interaction.client.lavalink.createPlayer({
+            guildId: interaction.guild.id,
+            voiceChannelId: voiceChannel.id,
+            textChannelId: interaction.channel.id,
+            selfDeaf: true
+        });
+
+        await player.connect();
+
+        const result = await player.search({
+            query: query,
+            source: 'ytmsearch'
+        }, interaction.user);
+
+        if (!result.tracks.length) {
+            return interaction.editReply('No song found.');
+        }
+
+        player.queue.add(result.tracks[0]);
+
+        if (!player.playing) {
+            await player.play();
+        }
+
+        await interaction.editReply(`🎵 Now playing: **${result.tracks[0].info.title}**`);
     }
-
-    const query = interaction.options.getString('song');
-
-    let videoUrl;
-
-    if (play.yt_validate(query) === 'video') {
-      videoUrl = query;
-    } else {
-      const results = await play.search(query, {
-        limit: 1,
-        source: { youtube: 'video' }
-      });
-
-      if (!results.length) {
-        return interaction.followUp('No song found.');
-      }
-
-      videoUrl = results[0].url;
-    }
-
-    console.log('QUERY:', query);
-console.log('VIDEO URL:', videoUrl);
-
-if (!videoUrl) {
-    return interaction.followUp('Song link problem. Try another song.');
-}
-
-let stream;
-
-try {
-    stream = await play.stream(videoUrl, {
-        quality: 2
-    });
-} catch (error) {
-    console.error(error);
-
-    return interaction.editReply(
-        '❌ YouTube blocked playback on Railway. Bot is online though.'
-    );
-}
-
-const resource = createAudioResource(stream.stream);
-
-    const player = createAudioPlayer();
-interaction.client.player = player;
-    const connection = joinVoiceChannel({
-      channelId: voiceChannel.id,
-      guildId: interaction.guild.id,
-      adapterCreator: interaction.guild.voiceAdapterCreator
-    });
-
-    connection.subscribe(player);
-    player.play(resource);
-
-    player.on(AudioPlayerStatus.Playing, () => {
-      console.log('Music is playing!');
-    });
-
-    player.on('error', error => {
-      console.error(error);
-    });
-
-    await interaction.editReply(`Now playing: **${query}** 🎵`);
-  }
 };
