@@ -58,5 +58,9 @@ client.on('interactionCreate', async interaction => {
     }
 
 });
-
+client.lavalink = {
+    host: 'lavalink',
+    port: 2333,
+    password: 'novapassword'
+};
 client.login(process.env.TOKEN);
