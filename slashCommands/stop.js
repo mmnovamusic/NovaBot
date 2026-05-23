@@ -1,25 +1,30 @@
-const { getVoiceConnection } = require('@discordjs/voice');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-
     name: 'stop',
+    description: 'Stop music',
 
-    description: 'Stop music and leave VC',
+    data: new SlashCommandBuilder()
+        .setName('stop')
+        .setDescription('Stop music'),
 
     async execute(interaction) {
 
-        const connection = getVoiceConnection(interaction.guild.id);
+        const player =
+            interaction.client.lavalink.getPlayer(
+                interaction.guild.id
+            );
 
-        if (!connection) {
-
-            return interaction.reply('❌ I am not in a voice channel.');
-
+        if (!player) {
+            return interaction.reply(
+                '❌ No music player found.'
+            );
         }
 
-        connection.destroy();
+        await player.destroy();
 
-        interaction.reply('👋 Left the voice channel.');
-
+        await interaction.reply(
+            '👋 Stopped music and left voice.'
+        );
     }
-
 };
