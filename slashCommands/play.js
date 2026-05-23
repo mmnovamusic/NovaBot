@@ -57,17 +57,8 @@ if (!videoUrl) {
     return interaction.followUp('Song link problem. Try another song.');
 }
 
-const stream = await play.stream(videoUrl, {
-    discordPlayerCompatibility: true
-});
-
-const resource = createAudioResource(
-    stream.stream,
-    {
-        inputType: stream.type,
-        inlineVolume: true
-    }
-);
+const stream = await play.stream(videoUrl);
+const resource = createAudioResource(stream.stream);
 
     const player = createAudioPlayer();
 interaction.client.player = player;
