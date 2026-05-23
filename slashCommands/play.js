@@ -23,7 +23,7 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await interaction.deferReply();
+    await interaction.reply('🔎 Searching...');
 
     const voiceChannel = interaction.member.voice.channel;
 
