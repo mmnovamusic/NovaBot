@@ -61,13 +61,23 @@ const stream = youtubedl.exec(
     videoUrl,
     {
         output: '-',
-        format: 'bestaudio',
-        quiet: true
+        format: 'bestaudio[ext=webm]/bestaudio',
+        noWarnings: true,
+        noCheckCertificates: true,
+        preferFreeFormats: true
     },
     {
-        stdio: ['ignore', 'pipe', 'ignore']
+        stdio: ['ignore', 'pipe', 'pipe']
     }
 );
+
+stream.stderr.on('data', data => {
+    console.log('YT-DLP ERROR:', data.toString());
+});
+
+const resource = createAudioResource(stream.stdout, {
+    inlineVolume: true
+});
 
 const resource = createAudioResource(stream.stdout);
 
